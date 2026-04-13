@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Snodus — Open Source LLM Gateway</title>
+<meta name="description" content="Route, authenticate, and track AI API usage across Anthropic, OpenAI, and Ollama. Free and open source, MIT licensed.">
+<meta property="og:title" content="Snodus — Open Source LLM Gateway">
+<meta property="og:description" content="Multi-provider AI gateway with virtual API keys, rate limiting, budget enforcement, and smart routing. Self-host in 30 seconds.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://snodus.org">
+<script src="/i18n.js"></script>
+<style>
+  :root {
+    --bg: #0f172a;
+    --surface: #1e293b;
+    --border: #334155;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+    --accent: #38bdf8;
+    --accent2: #818cf8;
+    --green: #4ade80;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; line-height: 1.6; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .container { max-width: 900px; margin: 0 auto; padding: 0 24px; }
+
+  header { padding: 20px 0; border-bottom: 1px solid var(--border); }
+  header .container { display: flex; align-items: center; justify-content: space-between; }
+  header h1 { font-size: 20px; font-weight: 700; }
+  header h1 span { color: var(--accent); }
+  header nav { display: flex; align-items: center; gap: 4px; }
+  header nav a { margin-left: 20px; color: var(--muted); font-size: 14px; font-weight: 500; }
+  header nav a:hover { color: var(--text); text-decoration: none; }
+
+  .hero { padding: 80px 0 60px; text-align: center; }
+  .hero .badge { display: inline-block; padding: 4px 14px; background: rgba(56,189,248,0.1); color: var(--accent); border: 1px solid rgba(56,189,248,0.2); border-radius: 999px; font-size: 13px; font-weight: 600; margin-bottom: 20px; }
+  .hero h2 { font-size: 44px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.1; margin-bottom: 16px; }
+  .hero p { font-size: 18px; color: var(--muted); max-width: 600px; margin: 0 auto 32px; }
+  .cta-row { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  .btn { display: inline-block; padding: 12px 24px; border-radius: 8px; font-weight: 600; font-size: 14px; }
+  .btn-primary { background: var(--accent); color: var(--bg); }
+  .btn-primary:hover { opacity: 0.9; text-decoration: none; }
+  .btn-outline { border: 1px solid var(--border); color: var(--text); }
+  .btn-outline:hover { border-color: var(--accent); text-decoration: none; }
+
+  .install { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 32px; margin: 40px auto; max-width: 640px; }
+  .install h3 { font-size: 14px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 16px; }
+  .install pre { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 16px; overflow-x: auto; font-family: "SF Mono", Menlo, monospace; font-size: 13px; line-height: 1.6; color: var(--green); }
+  .install pre .cmt { color: var(--muted); }
+
+  section.block { padding: 60px 0; }
+  section h3.title { font-size: 28px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 12px; }
+  section p.sub { color: var(--muted); margin-bottom: 40px; }
+
+  .features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .feature { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 24px; }
+  .feature h4 { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+  .feature p { color: var(--muted); font-size: 13px; }
+
+  .compare { margin-top: 48px; }
+  .compare table { width: 100%; border-collapse: collapse; }
+  .compare th, .compare td { padding: 10px 16px; text-align: left; border-bottom: 1px solid var(--border); font-size: 14px; }
+  .compare th { color: var(--muted); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; }
+  .compare .yes { color: var(--green); }
+  .compare .no { color: var(--muted); }
+
+  footer { padding: 40px 0; border-top: 1px solid var(--border); color: var(--muted); font-size: 13px; }
+  footer .container { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
+  footer a { color: var(--muted); margin-right: 16px; }
+
+  @media (max-width: 700px) { .features { grid-template-columns: 1fr; } .hero h2 { font-size: 32px; } }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="container">
+    <h1>Snod<span>us</span></h1>
+    <nav>
+      <a href="#install">Install</a>
+      <a href="#features">Features</a>
+      <a href="#compare">OSS vs Cloud</a>
+      <a href="https://snodus.dev">Docs</a>
+      <a href="https://github.com/42NE-Ltd/snodus">GitHub</a>
+      <select id="lang-switcher" onchange="i18n.load(this.value)" style="background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:4px 8px;font-size:12px;cursor:pointer;">
+        <option value="en">English</option>
+        <option value="zh">中文</option>
+        <option value="hi">हिन्दी</option>
+        <option value="es">Español</option>
+        <option value="ar">العربية</option>
+        <option value="fr">Français</option>
+        <option value="bn">বাংলা</option>
+        <option value="pt">Português</option>
+        <option value="ru">Русский</option>
+        <option value="id">Bahasa</option>
+        <option value="de">Deutsch</option>
+        <option value="ja">日本語</option>
+        <option value="ko">한국어</option>
+        <option value="it">Italiano</option>
+      </select>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="container">
+    <div class="badge" data-i18n="oss_landing.badge">MIT Licensed &middot; Free Forever</div>
+    <h2 data-i18n="oss_landing.hero_headline">Open Source LLM Gateway</h2>
+    <p data-i18n="oss_landing.hero_sub">Route, authenticate, and track AI API usage across Anthropic, OpenAI, and local models. Self-host in 30 seconds.</p>
+    <div class="cta-row">
+      <a class="btn btn-primary" href="https://github.com/42NE-Ltd/snodus" data-i18n="oss_landing.cta_github">View on GitHub</a>
+      <a class="btn btn-outline" href="https://snodus.dev" data-i18n="oss_landing.cta_docs">Read the Docs</a>
+    </div>
+  </div>
+</section>
+
+<section id="install">
+  <div class="container">
+    <div class="install">
+      <h3 data-i18n="oss_landing.install_title">Quick Start</h3>
+      <pre><span class="cmt"># Clone and run with Docker</span>
+git clone https://github.com/42NE-Ltd/snodus
+cd snodus
+cp .env.example .env
+<span class="cmt"># Edit .env: set ANTHROPIC_API_KEY and ADMIN_PASSWORD</span>
+docker compose up -d
+
+<span class="cmt"># Create your first team, user, and API key</span>
+snodus teams create --name "My Team"
+snodus users create --email you@company.com --name "Your Name" --team-id &lt;TEAM_UUID&gt; --role admin
+snodus keys create --user-id &lt;USER_UUID&gt; --name dev
+
+<span class="cmt"># Point your app to Snodus</span>
+export ANTHROPIC_BASE_URL=http://localhost:8080
+export ANTHROPIC_AUTH_TOKEN=sk-...</pre>
+    </div>
+  </div>
+</section>
+
+<section class="block" id="features">
+  <div class="container">
+    <h3 class="title" data-i18n="oss_landing.features_title">What you get</h3>
+    <p class="sub" data-i18n="oss_landing.features_sub">Everything you need to manage AI API usage across your team.</p>
+    <div class="features">
+      <div class="feature">
+        <h4 data-i18n="oss_landing.feature_multiprovider">Multi-Provider</h4>
+        <p data-i18n="oss_landing.feature_multiprovider_desc">Anthropic, OpenAI, and Ollama behind a single API. Automatic format translation between providers.</p>
+      </div>
+      <div class="feature">
+        <h4 data-i18n="oss_landing.feature_routing">Smart Routing</h4>
+        <p data-i18n="oss_landing.feature_routing_desc">Pass <code>"model": "auto"</code> and let Snodus pick Haiku, Sonnet, or Opus based on input complexity.</p>
+      </div>
+      <div class="feature">
+        <h4 data-i18n="oss_landing.feature_keys">Virtual API Keys</h4>
+        <p data-i18n="oss_landing.feature_keys_desc">Per-user keys with rate limiting, monthly budgets, rotation, and instant revocation.</p>
+      </div>
+      <div class="feature">
+        <h4 data-i18n="oss_landing.feature_spend">Spend Tracking</h4>
+        <p data-i18n="oss_landing.feature_spend_desc">Real-time cost tracking per model, user, and team. Dashboard with recent requests and breakdowns.</p>
+      </div>
+      <div class="feature">
+        <h4 data-i18n="oss_landing.feature_budget">Budget Enforcement</h4>
+        <p data-i18n="oss_landing.feature_budget_desc">Set monthly caps per key or team. Gateway returns 402 when the budget is exceeded.</p>
+      </div>
+      <div class="feature">
+        <h4 data-i18n="oss_landing.feature_cli">Full CLI</h4>
+        <p data-i18n="oss_landing.feature_cli_desc">Manage teams, users, keys, budgets, and providers from the command line.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="block compare" id="compare">
+  <div class="container">
+    <h3 class="title" data-i18n="oss_landing.compare_title">Open Source vs Cloud</h3>
+    <p class="sub" data-i18n="oss_landing.compare_sub">The core gateway is free. The managed service adds enterprise features.</p>
+    <table>
+      <thead>
+        <tr><th data-i18n="oss_landing.compare_feature">Feature</th><th data-i18n="oss_landing.compare_oss">Snodus OSS</th><th data-i18n="oss_landing.compare_cloud">Snodus Cloud</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Multi-provider proxy</td><td class="yes" data-i18n="oss_landing.compare_included">Included</td><td class="yes" data-i18n="oss_landing.compare_included">Included</td></tr>
+        <tr><td>Virtual API keys</td><td class="yes" data-i18n="oss_landing.compare_included">Included</td><td class="yes" data-i18n="oss_landing.compare_included">Included</td></tr>
+        <tr><td>Rate limiting &amp; budgets</td><td class="yes" data-i18n="oss_landing.compare_included">Included</td><td class="yes" data-i18n="oss_landing.compare_included">Included</td></tr>
+        <tr><td>Smart routing (rules)</td><td class="yes" data-i18n="oss_landing.compare_included">Included</td><td class="yes" data-i18n="oss_landing.compare_included">Included</td></tr>
+        <tr><td>Spend tracking</td><td class="yes" data-i18n="oss_landing.compare_included">Included</td><td class="yes" data-i18n="oss_landing.compare_included">Included</td></tr>
+        <tr><td>Dashboard</td><td class="yes" data-i18n="oss_landing.compare_basic">Basic</td><td class="yes" data-i18n="oss_landing.compare_full">Full (charts, CSV, advanced analytics)</td></tr>
+        <tr><td>SSO / OIDC</td><td class="no">&mdash;</td><td class="yes" data-i18n="oss_landing.compare_included">Included</td></tr>
+        <tr><td>SCIM provisioning</td><td class="no">&mdash;</td><td class="yes" data-i18n="oss_landing.compare_included">Included</td></tr>
+        <tr><td>Audit log</td><td class="no">&mdash;</td><td class="yes" data-i18n="oss_landing.compare_included">Included</td></tr>
+        <tr><td>Webhook notifications</td><td class="no">&mdash;</td><td class="yes" data-i18n="oss_landing.compare_included">Included</td></tr>
+        <tr><td>Multi-region failover</td><td class="no">&mdash;</td><td class="yes" data-i18n="oss_landing.compare_included">Included</td></tr>
+        <tr><td>Billing &amp; invoicing</td><td class="no">&mdash;</td><td class="yes">Stripe integration</td></tr>
+        <tr><td>Hosting</td><td data-i18n="oss_landing.compare_self">Self-managed</td><td data-i18n="oss_landing.compare_managed">Managed by 42NE Ltd</td></tr>
+        <tr><td>Support</td><td data-i18n="oss_landing.compare_community">Community (GitHub)</td><td data-i18n="oss_landing.compare_email_sla">Email + SLA</td></tr>
+        <tr><td>License</td><td>MIT</td><td>Proprietary</td></tr>
+        <tr><td>Price</td><td><strong data-i18n="oss_landing.compare_free">Free</strong></td><td><a href="https://snodus.ai#pricing" data-i18n="oss_landing.compare_from">From $19/mo</a></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <div data-i18n="oss_landing.footer_company">Snodus is an open source project by <strong>42NE Ltd</strong>, London.</div>
+    <nav>
+      <a href="https://github.com/42NE-Ltd/snodus">GitHub</a>
+      <a href="https://snodus.dev">Docs</a>
+      <a href="https://snodus.ai">Cloud</a>
+      <a href="mailto:hello@snodus.ai">Contact</a>
+    </nav>
+  </div>
+</footer>
+
+<script>(function(){var t={'snodus.ai':'3988ad48530f468f9f4dac40325000a2','snodus.org':'1713b6028cda49808e07b5561b80dd8d','snodus.dev':'6eb921115a0f424f8d8d85257e3218c9'};var k=t[location.hostname];if(k){var s=document.createElement('script');s.defer=true;s.src='https://static.cloudflareinsights.com/beacon.min.js';s.setAttribute('data-cf-beacon',JSON.stringify({token:k}));document.body.appendChild(s);}})()</script>
+</body>
+</html>

@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Snodus (core) — Dashboard</title>
+<script src="/i18n.js"></script>
+<style>
+  :root {
+    --bg: #ffffff;
+    --surface: #F8FAFC;
+    --border: #E2E8F0;
+    --text: #0F172A;
+    --muted: #64748B;
+    --accent: #3B82F6;
+    --success: #22C55E;
+    --danger: #EF4444;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--surface); color: var(--text); font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 14px; line-height: 1.5; }
+  a { color: var(--accent); text-decoration: none; }
+
+  /* Header with horizontal tabs */
+  header { background: var(--bg); border-bottom: 1px solid var(--border); padding: 0 24px; display: flex; align-items: center; height: 56px; gap: 24px; }
+  header h1 { font-size: 18px; font-weight: 600; letter-spacing: -0.02em; white-space: nowrap; }
+  header h1 span { color: var(--accent); }
+  header .badge { padding: 2px 8px; background: var(--surface); color: var(--muted); font-size: 10px; border-radius: 4px; text-transform: uppercase; border: 1px solid var(--border); }
+  header nav { display: flex; gap: 4px; margin-left: 8px; }
+  header nav button { padding: 8px 14px; background: transparent; color: var(--muted); border: 0; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: 500; }
+  header nav button:hover { background: var(--surface); color: var(--text); }
+  header nav button.active { background: var(--accent); color: #fff; }
+  header .spacer { flex: 1; }
+  header .upgrade { font-size: 12px; color: var(--muted); }
+  header .upgrade a { font-weight: 600; }
+  header select { padding: 4px 8px; background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 4px; font-size: 12px; cursor: pointer; }
+
+  /* Main content */
+  main { max-width: 1100px; margin: 0 auto; padding: 24px; }
+  h2 { margin: 0 0 20px; font-size: 20px; font-weight: 600; }
+  .kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
+  .card { background: var(--bg); border: 1px solid var(--border); border-radius: 4px; padding: 20px; }
+  .card .label { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+  .card .value { font-size: 26px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+  table th, table td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border); font-size: 13px; }
+  table th { color: var(--muted); text-transform: uppercase; font-size: 11px; letter-spacing: 0.06em; font-weight: 500; }
+  table tbody tr:nth-child(even) { background: var(--surface); }
+  .btn { background: var(--accent); color: #fff; border: 0; border-radius: 4px; padding: 8px 14px; font-weight: 600; cursor: pointer; font-size: 13px; }
+  .btn.secondary { background: var(--bg); color: var(--text); border: 1px solid var(--border); }
+  .btn.danger { background: var(--danger); color: #fff; }
+  .pill { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+  .pill.ok { background: rgba(34, 197, 94, 0.1); color: var(--success); }
+  .pill.bad { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
+  .toolbar { display: flex; gap: 10px; margin-bottom: 16px; align-items: center; }
+  .empty { color: var(--muted); text-align: center; padding: 40px; }
+  .hide { display: none !important; }
+  @media (max-width: 768px) { .kpis { grid-template-columns: 1fr; } header nav { display: none; } }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Snod<span>us</span></h1>
+  <div class="badge" data-i18n="dashboard.badge_oss">core &middot; open source</div>
+  <nav>
+    <button class="active" data-tab="spend" data-i18n="dashboard.nav_spend">Spend</button>
+    <button data-tab="keys" data-i18n="dashboard.nav_keys">Keys</button>
+    <button data-tab="users" data-i18n="dashboard.nav_users">Users &amp; Teams</button>
+  </nav>
+  <div class="spacer"></div>
+  <div class="upgrade"><a href="https://snodus.ai" data-i18n="dashboard.upgrade_link">Snodus Cloud</a></div>
+  <select id="lang-switcher" onchange="i18n.load(this.value)">
+    <option value="en">English</option>
+    <option value="zh">中文</option>
+    <option value="hi">हिन्दी</option>
+    <option value="es">Español</option>
+    <option value="ar">العربية</option>
+    <option value="fr">Français</option>
+    <option value="bn">বাংলা</option>
+    <option value="pt">Português</option>
+    <option value="ru">Русский</option>
+    <option value="id">Bahasa</option>
+    <option value="de">Deutsch</option>
+    <option value="ja">日本語</option>
+    <option value="ko">한국어</option>
+    <option value="it">Italiano</option>
+  </select>
+</header>
+
+<main>
+  <!-- Spend tab -->
+  <section id="tab-spend">
+    <h2 data-i18n="dashboard.spend_title">Spend overview</h2>
+    <div class="kpis">
+      <div class="card"><div class="label" data-i18n="dashboard.kpi_month">Current month</div><div class="value" id="kpi-month">&mdash;</div></div>
+      <div class="card"><div class="label" data-i18n="dashboard.kpi_requests">Requests</div><div class="value" id="kpi-requests">&mdash;</div></div>
+      <div class="card"><div class="label" data-i18n="dashboard.kpi_avg">Avg cost / request</div><div class="value" id="kpi-avg">&mdash;</div></div>
+    </div>
+    <div class="card">
+      <div class="label" style="margin-bottom:12px;" data-i18n="dashboard.models_current_month">By model (current month)</div>
+      <table><thead><tr><th data-i18n="dashboard.col_model">Model</th><th style="text-align:right;" data-i18n="dashboard.col_requests">Requests</th><th style="text-align:right;" data-i18n="dashboard.col_cost">Cost</th></tr></thead><tbody id="models-rows"></tbody></table>
+    </div>
+    <div class="card" style="margin-top:16px;">
+      <div class="label" style="margin-bottom:12px;" data-i18n="dashboard.recent_requests">Recent requests</div>
+      <table><thead><tr><th data-i18n="dashboard.col_time">Time</th><th data-i18n="dashboard.col_user">User</th><th data-i18n="dashboard.col_model">Model</th><th style="text-align:right;" data-i18n="dashboard.col_tokens">Tokens</th><th style="text-align:right;" data-i18n="dashboard.col_cost">Cost</th></tr></thead><tbody id="recent-rows"></tbody></table>
+    </div>
+  </section>
+
+  <!-- Keys tab -->
+  <section id="tab-keys" class="hide">
+    <h2 data-i18n="dashboard.nav_keys">API keys</h2>
+    <div class="toolbar"><button class="btn secondary" onclick="loadKeys()" data-i18n="dashboard.btn_refresh">Refresh</button></div>
+    <div class="card"><table><thead><tr><th data-i18n="dashboard.col_prefix">Prefix</th><th data-i18n="dashboard.col_name">Name</th><th data-i18n="dashboard.col_user">User</th><th data-i18n="dashboard.col_rate_limit">Rate limit</th><th data-i18n="dashboard.col_status">Status</th><th data-i18n="dashboard.col_last_used">Last used</th></tr></thead><tbody id="keys-rows"></tbody></table></div>
+  </section>
+
+  <!-- Users tab -->
+  <section id="tab-users" class="hide">
+    <h2 data-i18n="dashboard.nav_users">Users &amp; Teams</h2>
+    <div class="card" style="margin-bottom:16px;">
+      <div class="label" style="margin-bottom:12px;" data-i18n="dashboard.col_user">Users</div>
+      <table><thead><tr><th data-i18n="dashboard.col_email">Email</th><th data-i18n="dashboard.col_name">Name</th><th data-i18n="dashboard.col_role">Role</th></tr></thead><tbody id="users-rows"></tbody></table>
+    </div>
+    <div class="card">
+      <div class="label" style="margin-bottom:12px;" data-i18n="dashboard.col_team">Teams</div>
+      <table><thead><tr><th data-i18n="dashboard.col_name">Name</th><th data-i18n="dashboard.col_budget">Budget</th></tr></thead><tbody id="teams-rows"></tbody></table>
+    </div>
+  </section>
+</main>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const fmtMoney = (cents) => "$" + (cents / 100).toFixed(2);
+const creds = btoa("admin:" + (localStorage.getItem("snodus_admin_pass") || prompt("Admin password") || ""));
+localStorage.setItem("snodus_admin_pass", atob(creds).split(":")[1]);
+const api = (path, opts = {}) => fetch(path, { ...opts, headers: { ...opts.headers, "Authorization": "Basic " + creds, "Content-Type": "application/json" } }).then(r => r.ok ? r.json() : r.json().then(e => Promise.reject(e)));
+
+document.querySelectorAll("header nav button[data-tab]").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll("header nav button[data-tab]").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    document.querySelectorAll("main > section").forEach(s => s.classList.add("hide"));
+    $("tab-" + btn.dataset.tab).classList.remove("hide");
+    if (btn.dataset.tab === "spend") loadSpend();
+    if (btn.dataset.tab === "keys") loadKeys();
+    if (btn.dataset.tab === "users") loadUsersTeams();
+  });
+});
+
+async function loadSpend() {
+  const summary = await api("/admin/spend");
+  const month = summary.current_month;
+  $("kpi-month").textContent = "$" + month.total_cost_usd;
+  $("kpi-requests").textContent = month.total_requests;
+  const avg = month.total_requests > 0 ? month.total_cost_cents / month.total_requests : 0;
+  $("kpi-avg").textContent = "$" + (avg / 100).toFixed(4);
+
+  try {
+    const models = await api("/admin/spend/by_model");
+    $("models-rows").innerHTML = models.models.map(m => `<tr><td>${m.model}</td><td style="text-align:right;">${m.total_requests}</td><td style="text-align:right;">${fmtMoney(m.total_cents)}</td></tr>`).join("") || `<tr><td colspan="3" class="empty">${i18n.t('dashboard.no_data')}</td></tr>`;
+  } catch (e) { $("models-rows").innerHTML = `<tr><td colspan="3" class="empty">${i18n.t('dashboard.no_data')}</td></tr>`; }
+
+  try {
+    const recent = await api("/admin/spend/recent?limit=20");
+    $("recent-rows").innerHTML = recent.recent.map(r => `<tr><td>${new Date(r.created_at).toLocaleTimeString()}</td><td>${r.user_email}</td><td>${r.model}</td><td style="text-align:right;">${r.input_tokens}+${r.output_tokens}</td><td style="text-align:right;">${fmtMoney(r.cost_cents)}</td></tr>`).join("") || `<tr><td colspan="5" class="empty">${i18n.t('dashboard.no_data')}</td></tr>`;
+  } catch (e) { $("recent-rows").innerHTML = `<tr><td colspan="5" class="empty">${i18n.t('dashboard.no_data')}</td></tr>`; }
+}
+
+async function loadKeys() {
+  const [keys, users] = await Promise.all([api("/admin/keys"), api("/admin/users")]);
+  const userMap = Object.fromEntries(users.users.map(u => [u.id, u]));
+  $("keys-rows").innerHTML = keys.keys.map(k => {
+    const u = userMap[k.user_id];
+    const status = k.is_active ? `<span class="pill ok">${i18n.t('dashboard.status_active')}</span>` : `<span class="pill bad">${i18n.t('dashboard.status_revoked')}</span>`;
+    return `<tr><td><code>${k.key_prefix}</code></td><td>${k.name ?? "-"}</td><td>${u ? u.email : "-"}</td><td>${k.rate_limit}${i18n.t('common.per_min')}</td><td>${status}</td><td>${k.last_used ? new Date(k.last_used).toLocaleString() : i18n.t('common.never')}</td></tr>`;
+  }).join("") || `<tr><td colspan="6" class="empty">${i18n.t('dashboard.no_keys')}</td></tr>`;
+}
+
+async function loadUsersTeams() {
+  const [users, teams] = await Promise.all([api("/admin/users"), api("/admin/teams")]);
+  $("users-rows").innerHTML = users.users.map(u => `<tr><td>${u.email}</td><td>${u.name}</td><td>${u.role}</td></tr>`).join("") || `<tr><td colspan="3" class="empty">${i18n.t('dashboard.no_users')}</td></tr>`;
+  $("teams-rows").innerHTML = teams.teams.map(t => {
+    const budget = t.budget_monthly_cents ? fmtMoney(t.budget_monthly_cents) : i18n.t('dashboard.unlimited');
+    return `<tr><td>${t.name}</td><td>${budget}</td></tr>`;
+  }).join("") || `<tr><td colspan="2" class="empty">${i18n.t('dashboard.no_teams')}</td></tr>`;
+}
+
+loadSpend();
+</script>
+<script>(function(){var t={'snodus.ai':'3988ad48530f468f9f4dac40325000a2','snodus.org':'1713b6028cda49808e07b5561b80dd8d','snodus.dev':'6eb921115a0f424f8d8d85257e3218c9'};var k=t[location.hostname];if(k){var s=document.createElement('script');s.defer=true;s.src='https://static.cloudflareinsights.com/beacon.min.js';s.setAttribute('data-cf-beacon',JSON.stringify({token:k}));document.body.appendChild(s);}})()</script>
+</body>
+</html>
